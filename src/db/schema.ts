@@ -10,10 +10,11 @@ import {
 import { relations } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 
-//Users Tabel
+//Users Tabe
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: varchar('email', { length: 255 }).notNull().unique(),
+  username: varchar('username', { length: 50 }).notNull().unique(),
   passwordHash: text('password').notNull(),
   firstName: varchar('first_name', { length: 50 }),
   lastName: varchar('last_name', { length: 50 }),
@@ -37,7 +38,7 @@ export const habits = pgTable('habits', {
 
 export const entries = pgTable('entries', {
   id: uuid('id').primaryKey().defaultRandom(),
-  habitID: uuid('id')
+  habitId: uuid('habit_id')
     .references(() => habits.id, { onDelete: 'cascade' })
     .notNull(),
   completionDate: timestamp('completion_date').defaultNow().notNull(),
@@ -80,7 +81,7 @@ export const habitRelations = relations(habits, ({ one, many }) => ({
 
 export const entryRelations = relations(entries, ({ one }) => ({
   habit: one(habits, {
-    fields: [entries.habitID],
+    fields: [entries.habitId],
     references: [habits.id],
   }),
 }))
@@ -101,10 +102,16 @@ export const habitTagsRelations = relations(habitTags, ({ one }) => ({
 }))
 
 export type User = typeof users.$inferSelect
-export type Habis = typeof habits.$inferSelect
+export type Habit = typeof habits.$inferSelect
 export type Entry = typeof entries.$inferSelect
 export type Tag = typeof tags.$inferSelect
 export type HabitTag = typeof habitTags.$inferSelect
+
+export type NewUser = typeof users.$inferInsert
+export type NewHabit = typeof habits.$inferInsert
+export type NewEntry = typeof entries.$inferInsert
+export type NewTag = typeof tags.$inferInsert
+export type NewHabitTag = typeof habitTags.$inferInsert
 
 export const insertUserSchema = createInsertSchema(users)
 export const selectUserSchema = createSelectSchema(users)
